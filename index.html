@@ -340,7 +340,7 @@ button.submit {
 <p id="total">總金額 $0</p>
 <p class="notice">
 送出後不代表完成訂購，<br>
-待確認成團後將另行通知付款與填寫收件資料。
+下單後 48 小時內付款，確認付款後方成立訂單。
 </p>
 <button class="submit" onclick="submitOrder()">送出訂單</button>
 </div>
@@ -565,12 +565,12 @@ function submitOrder() {
   }
 
   const orderId =
-    "TY" +
+    "DARUMA" +
     Math.floor(
       100000 + Math.random() * 900000
     );
 
-  db.collection("orders").add({
+  db.collection("daruma_2026_summer").add({
     orderId,
     name,
     ig,
@@ -624,7 +624,7 @@ function searchOrder() {
     return;
   }
 
-  db.collection("orders")
+  db.collection("daruma_2026_summer")
     .get()
     .then(snapshot => {
       const el = document.getElementById("result");
