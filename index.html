@@ -390,9 +390,9 @@ fetch("https://script.google.com/macros/s/AKfycby_AxjTKz4Em6rSC9ucUt2lYn7X5k7Qwc
   .then(data => {
     console.log("DATA:", data);
 
-    products = data.filter(
-      p => p.status === "on"
-    );
+products = data.filter(p =>
+  String(p.status).trim().toLowerCase() === "on"
+);
 
     renderProducts();
     updateGroupStatus();
