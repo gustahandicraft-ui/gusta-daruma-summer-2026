@@ -587,9 +587,15 @@ function submitOrder() {
       cart
     );
 
-    alert(
-      "訂單已送出！\n\n訂單編號：" + orderId
-    );
+alert(
+  `訂單已送出！\n\n` +
+  `訂單編號：${orderId}\n\n` +
+  `請於下單後 48 小時內完成匯款。\n\n` +
+  `銀行：你的銀行名稱（銀行代碼）\n` +
+  `戶名：糸字旁工作室\n` +
+  `帳號：你的帳號\n\n` +
+  `完成付款後請填寫匯款資訊／帳號末五碼。`
+);
 
     cart = {};
 
@@ -690,16 +696,22 @@ function sendOrderEmail(orderId, name, email, cart){
       })
       .join("<br>");
 
-  return emailjs.send(
-    "service_hc29cbj",
-    "template_muprcbi",
-    {
-      order_id: orderId,
-      to_name: name,
-      to_email: email,
-      message: items
-    }
-  )
+ return emailjs.send(
+  "service_hc29cbj",
+  "template_muprcbi",
+  {
+    order_id: orderId,
+    to_name: name,
+    to_email: email,
+    message: items,
+
+    bank_name: "你的銀行名稱",
+    bank_code: "銀行代碼",
+    account_name: "糸字旁工作室",
+    account_number: "你的帳號",
+    payment_deadline: "下單後 48 小時內"
+  }
+)
   .then(() => {
     console.log("✅ Email sent");
   })
