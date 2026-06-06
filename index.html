@@ -414,7 +414,7 @@ function renderProducts() {
       <img
         src="${p.img}"
         class="product-img"
-        onclick="openImage('${p.img}')"
+        onclick="openProductModal('${p.id}')"
       >
 
       <div class="product-name">${p.name}</div>
@@ -766,19 +766,84 @@ function submitRequest() {
     });
 }
 
-function openImage(src){
+let modalImages = [];
+let currentImageIndex = 0;
+
+function openProductModal(id) {
+  const product = products.find(p => p.id === id);
+  if (!product) return;
+
+  modalImages = [product.img, product.img2, product.img3]
+    .filter(Boolean);
+
+  currentImageIndex = 0;
+
   const modal = document.getElementById("imageModal");
   const img = document.getElementById("modalImg");
 
-  img.src = src;
+  img.src = modalImages[currentImageIndex];
+
+  modal.innerHTML = `
+    <div style="
+      background:#fffaf5;
+      max-width:520px;
+      width:100%;
+      max-height:90vh;
+      overflow:auto;
+      border-radius:20px;
+      padding:18px;
+      color:#5c4b3b;
+      position:relative;
+    ">
+      <button onclick="closeProductModal()" style="
+        position:absolute;
+        top:10px;
+        right:10px;
+        border:none;
+        background:#e7d7c7;
+        border-radius:50%;
+        width:34px;
+        height:34px;
+        font-size:18px;
+      ">×</button>
+
+      <img id="modalProductImg" src="${modalImages[0]}" style="
+        width:100%;
+        border-radius:16px;
+        margin-bottom:12px;
+      ">
+
+      <div style="display:flex; gap:8px; justify-content:center; margin-bottom:14px;">
+        <button onclick="changeModalImage(-1)">←</button>
+        <button onclick="changeModalImage(1)">→</button>
+      </div>
+
+      <h2 style="font-size:18px;">${product.name}</h2>
+
+      <p>${product.description || ""}</p>
+
+      <p><b>材質：</b>${product.material || ""}</p>
+      <p><b>規格：</b>${product.spec || ""}</p>
+      <p><b>價格：</b>$${product.price}</p>
+    </div>
+  `;
+
   modal.style.display = "flex";
 }
 
-document.getElementById("imageModal")
-.addEventListener("click", () => {
-  document.getElementById("imageModal")
-    .style.display = "none";
-});
+function changeModalImage(delta) {
+  if (modalImages.length === 0) return;
+
+  currentImageIndex =
+    (currentImageIndex + delta + modalImages.length) % modalImages.length;
+
+  document.getElementById("modalProductImg").src =
+    modalImages[currentImageIndex];
+}
+
+function closeProductModal() {
+  document.getElementById("imageModal").style.display = "none";
+}
 
 const endDate = new Date("2026-05-18T23:59:59").getTime();
 
