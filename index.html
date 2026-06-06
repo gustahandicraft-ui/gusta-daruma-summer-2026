@@ -732,7 +732,7 @@ function submitRequest() {
         ) {
           found = true;
 
-          db.collection("orders").doc(doc.id).update({
+          db.collection("daruma_2026_summer").doc(doc.id).update({
             request: requestText,
             requestStatus: "待處理"
           });
