@@ -271,12 +271,22 @@ function renderOrders(snapshot) {
 
       🕒 ${formatTime(d.created)}<br>
 
-      <button onclick="replyRequest('${doc.id}')">已回覆修改</button>
-      <button onclick="updateStatus('${doc.id}', '已付款')">標記已付款</button>
-      <button onclick="updateStatus('${doc.id}', '已訂貨')">標記已訂貨</button>
-      <button onclick="updateStatus('${doc.id}', '已出貨')">標記已出貨</button>
-      <button onclick="updateStatus('${doc.id}', '已完成')">標記完成</button>
-    `;
+<div style="margin-top:10px;">
+  🚚 寄件單號：${d.trackingNo || "尚未填寫"}<br>
+
+  <input
+    id="tracking-${doc.id}"
+    placeholder="輸入寄件單號"
+    value="${d.trackingNo || ""}"
+    style="margin:6px 0;"
+  >
+
+  <button onclick="replyRequest('${doc.id}')">已回覆修改</button>
+  <button onclick="updateStatus('${doc.id}', '已付款')">標記已付款</button>
+  <button onclick="updateStatus('${doc.id}', '已訂貨')">標記已訂貨</button>
+  <button onclick="markShipped('${doc.id}')">標記已出貨</button>
+  <button onclick="updateStatus('${doc.id}', '已完成')">標記完成</button>
+</div>;
 
     container.appendChild(div);
   });
@@ -560,6 +570,27 @@ loadProducts().then(() => {
   listenOrders();
   listenWishlist();
 });
+function markShipped(id) {
+  const trackingNo = document.getElementById("tracking-" + id).value.trim();
+
+  if (!trackingNo) {
+    alert("請先填寫寄件單號");
+    return;
+  }
+
+  db.collection("daruma_2026_summer").doc(id).update({
+    status: "已出貨",
+    trackingNo: trackingNo,
+    shippedAt: firebase.firestore.FieldValue.serverTimestamp()
+  })
+  .then(() => {
+    alert("已標記為出貨，並儲存寄件單號");
+  })
+  .catch(err => {
+    console.error(err);
+    alert("更新失敗，請稍後再試");
+  });
+}
 </script>
 
 </body>
