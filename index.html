@@ -419,15 +419,6 @@ button.submit {
     font-size:15px;
   "
 ></textarea>
-function submitWish() {
-  const name = document.getElementById("wishName").value.trim();
-  const contact = document.getElementById("wishContact").value.trim();
-  const wish = document.getElementById("wishItem").value.trim();
-
-  if (!name || !contact || !wish) {
-    alert("請填寫暱稱、聯絡方式與許願內容");
-    return;
-  }
 
   db.collection("daruma_wishlist").add({
     name,
@@ -559,7 +550,7 @@ function updateCart() {
 }
 
 function listenTotal() {
-  db.collection("orders").onSnapshot(snapshot => {
+  db.collection("daruma_2026_summer").onSnapshot(snapshot => {
     let totals = {};
 
     snapshot.forEach(doc => {
@@ -578,7 +569,7 @@ function listenTotal() {
 }
 
 function updateGroupStatus() {
-  db.collection("orders").get().then(snapshot => {
+  db.collection("daruma_2026_summer").get().then(snapshot => {
     let colorTotals = {};
     let seriesTotals = {};
 
@@ -809,7 +800,34 @@ function sendOrderEmail(orderId, name, email, cart){
     console.error("❌ Email failed", err);
   });
 }
+function submitWish() {
+  const name = document.getElementById("wishName").value.trim();
+  const contact = document.getElementById("wishContact").value.trim();
+  const wish = document.getElementById("wishItem").value.trim();
 
+  if (!name || !contact || !wish) {
+    alert("請填寫暱稱、聯絡方式與許願內容");
+    return;
+  }
+
+  db.collection("daruma_wishlist").add({
+    name,
+    contact,
+    wish,
+    created: firebase.firestore.FieldValue.serverTimestamp()
+  })
+  .then(() => {
+    alert("已收到你的 DARUMA 許願清單，謝謝你 🧶");
+
+    document.getElementById("wishName").value = "";
+    document.getElementById("wishContact").value = "";
+    document.getElementById("wishItem").value = "";
+  })
+  .catch(err => {
+    console.error(err);
+    alert("送出失敗，請稍後再試");
+  });
+}
 function submitRequest() {
   const input = document.getElementById("searchName").value.trim();
   const requestText = document.getElementById("request").value.trim();
@@ -819,7 +837,7 @@ function submitRequest() {
     return;
   }
 
-  db.collection("orders")
+  db.collection("daruma_2026_summer")
     .get()
     .then(snapshot => {
       let found = false;
