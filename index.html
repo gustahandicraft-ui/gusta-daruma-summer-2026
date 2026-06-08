@@ -16,6 +16,7 @@ emailjs.init("Bv3jNth_VV48IwhIK");
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Noto+Sans+TC:wght@300;400;500&display=swap');
+
 * {
   box-sizing: border-box;
 }
@@ -23,8 +24,8 @@ emailjs.init("Bv3jNth_VV48IwhIK");
 body {
   font-family: "Outfit", "Noto Sans TC", sans-serif;
   background: linear-gradient(#f8f3ed, #efe7dc);
-  padding-bottom: 320px;
   padding: 28px;
+  padding-bottom: 320px;
   color: #5c4b3b;
   line-height: 1.7;
   letter-spacing: 0.2px;
@@ -32,29 +33,19 @@ body {
 
 h1 {
   font-weight: 500;
-  font-size:24px;
+  font-size: 24px;
   letter-spacing: 0.5px;
 }
 
 h2 {
   font-weight: 400;
-  font-size:14px;
-  gap: 10px;
-  width:100%;
-  padding: 10px;
-  margin: 6px 0;
-  border-radius: 10px;
+  font-size: 14px;
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 12px;
   border: 1px solid #e5d5c3;
   background: #fffaf5;
-}
-
-h2-1 {
-  font-weight: 550;
-}
-
-h2-2 {
-  font-weight: 550;
-  font-size:16px;
 }
 
 input {
@@ -74,81 +65,43 @@ input {
   width: 100%;
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 18px;
-  width: 100%;
-}
-
 .card {
   background: white;
-  border-radius: 16px;
+  border-radius: 18px;
   padding: 14px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-
   width: 100%;
   min-width: 0;
 }
 
-.product-name{
-  font-weight:600;
-  font-size:16px;
-  margin-bottom:8px;
-  line-height:1.45;
+.product-img {
+  width: 100%;
+  aspect-ratio: 1/1;
+  object-fit: cover;
+  border-radius: 14px;
+  margin-bottom: 10px;
+  display: block;
+}
 
+.product-name {
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 8px;
+  line-height: 1.45;
   word-break: break-word;
   overflow-wrap: anywhere;
 }
 
-@media (max-width: 768px) {
-
-  body{
-    padding:16px;
-  }
-
-  .grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
-    align-items: start;
-  }
-
-  .card {
-    width: 100%;
-    padding: 12px;
-    border-radius: 16px;
-  }
-
-  .product-name {
-    font-size: 14px;
-  }
-
-  .group-box,
-  .group-status{
-    font-size:12px;
-  }
-
-  .qty-btn {
-    width: 42px;
-    height: 42px;
-    font-size: 22px;
-  }
+.group-box {
+  font-size: 13px;
+  color: #777;
+  margin-bottom: 6px;
 }
 
-  .grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-  }
-}
-
-.card {
-  background: white;
-  border-radius: 16px;
-  padding: 14px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-
-  width: 100%;
-  min-width: 0;
+.group-status {
+  margin-top: 8px;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .qty {
@@ -159,19 +112,28 @@ input {
   margin-top: 8px;
 }
 
+.qty-btn,
 .qty button {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
+  width: 42px;
+  height: 42px;
   border: none;
-  background: #d6bfa6;
-  color: white;
+  border-radius: 50%;
+  background: #e7d7c7;
+  color: #5c4b3b;
+  font-size: 22px;
   cursor: pointer;
 }
 
+.qty-btn:active {
+  transform: scale(0.92);
+}
+
+.qty-number,
 .qty span {
-  min-width: 20px;
+  font-size: 16px;
+  min-width: 28px;
   text-align: center;
+  font-weight: 600;
 }
 
 button.submit {
@@ -194,98 +156,80 @@ button.submit {
   box-shadow: 0 4px 12px rgba(0,0,0,0.06);
 }
 
-.product-name{
-  font-weight:600;
-  font-size:16px;
-  margin-bottom:8px;
-  line-height:1.45;
-
-  word-break: break-word;
-  overflow-wrap: anywhere;
+.notice {
+  font-size: 13px;
+  color: #7a6a5a;
+  line-height: 1.7;
+  margin: 14px 0;
+  background: #fff8f1;
+  padding: 12px;
+  border-radius: 12px;
 }
 
-.group-box{
-  font-size:13px;
-  color:#777;
-  margin-bottom:6px;
-}
-
-.group-status{
-  font-size:13px;
-  font-weight:600;
-  margin-bottom:10px;
-}
-
-.product-img {
-  width: 100%;
-  aspect-ratio: 1/1;
-  object-fit: cover;
+#countdown {
+  font-size: 14px;
+  font-weight: 500;
+  background: #fff8f1;
+  border: 1px solid #ead9c8;
+  padding: 10px 14px;
   border-radius: 14px;
-  margin-bottom: 10px;
-  display: block;
+  display: inline-block;
+  margin-bottom: 18px;
 }
 
-.qty{
-  display:flex;
-  align-items:center;
-  gap:10px;
+.sale-tag {
+  display: inline-block;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #f5efe7;
+  margin-bottom: 8px;
 }
 
-.qty-btn{
-  width:42px;
-  height:42px;
-  border:none;
-  border-radius:50%;
-  background:#e7d7c7;
-  color:#5c4b3b;
-  font-size:22px;
-  cursor:pointer;
-}
+/* 手機版 */
+@media (max-width: 768px) {
+  body {
+    padding: 14px;
+    padding-bottom: 320px;
+  }
 
-.qty-btn:active {
-  transform: scale(0.92);
-}
+  h1 {
+    font-size: 22px;
+    line-height: 1.4;
+  }
 
-.qty-number{
-  font-size: 16px;
-  min-width:28px;
-  text-align:center;
-  font-weight:600;
+  h2 {
+    font-size: 14px;
+    padding: 12px;
+    line-height: 1.75;
+  }
 
-}
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
 
-.group-status{
-  margin-top:8px;
-  font-size:13px;
-  font-weight:600;
-}
+  .card {
+    padding: 10px;
+    border-radius: 16px;
+  }
 
-.notice{
-  font-size:13px;
-  color:#7a6a5a;
-  line-height:1.7;
-  margin:14px 0;
-  background:#fff8f1;
-  padding:12px;
-  border-radius:12px;
-}
-#countdown{
-  font-size:14px;
-  font-weight:500;
-  background:#fff8f1;
-  border:1px solid #ead9c8;
-  padding:10px 14px;
-  border-radius:14px;
-  display:inline-block;
-  margin-bottom:18px;
-}
-  .sale-tag{
-  display:inline-block;
-  font-size:12px;
-  padding:4px 8px;
-  border-radius:999px;
-  background:#f5efe7;
-  margin-bottom:8px;
+  .product-name {
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  .group-box,
+  .group-status {
+    font-size: 12px;
+  }
+
+  .qty-btn,
+  .qty button {
+    width: 38px;
+    height: 38px;
+    font-size: 20px;
+  }
 }
 </style>
 </head>
