@@ -449,6 +449,11 @@ button.submit {
 <input id="name" placeholder="請填寫LINE社群完整暱稱">
 <input id="ig" placeholder="請填寫IG帳號（若使用LINE可填LINE名稱）">
 <input id="email" placeholder="請填寫 Email（用於訂單通知）">
+<input id="receiverName" placeholder="收件人姓名">
+<input id="receiverPhone" placeholder="收件人手機">
+<input id="receiverStore" placeholder="711收件門市">
+<input id="receiverStoreCode" placeholder="711門市店號">
+<input id="paymentLast5" placeholder="轉帳末五碼">
 
 <div class="grid" id="products"></div>
 
@@ -504,6 +509,7 @@ button.submit {
 </button>
 
 <script>
+const SHIPPING_FEE = 60;
 const firebaseConfig = {
   apiKey: "AIzaSyDm6qL6HhI_6nv0Uahrb6RqVFh0V7nI000",
   authDomain: "gusta-handicraft-91753.firebaseapp.com",
@@ -599,7 +605,9 @@ function updateCart() {
     el.appendChild(li);
   });
 
-  document.getElementById("total").textContent = "總金額 $" + total;
+ const grandTotal = total > 0 ? total + SHIPPING_FEE : 0;
+document.getElementById("total").textContent =
+  "總金額 $" + grandTotal + "（含 7-11 運費 $60）";
 }
 
 function listenTotal() {
@@ -686,8 +694,19 @@ function submitOrder() {
   const ig = document.getElementById("ig").value.trim();
   const email = document.getElementById("email").value.trim();
 
+  const receiverName = document.getElementById("receiverName").value.trim();
+  const receiverPhone = document.getElementById("receiverPhone").value.trim();
+  const receiverStore = document.getElementById("receiverStore").value.trim();
+  const receiverStoreCode = document.getElementById("receiverStoreCode").value.trim();
+  const paymentLast5 = document.getElementById("paymentLast5").value.trim();
+
   if (!name || !ig || !email) {
-    alert("請填寫完整資料");
+    alert("請填寫暱稱、IG/LINE、Email");
+    return;
+  }
+
+  if (!receiverName || !receiverPhone || !receiverStore || !receiverStoreCode || !paymentLast5) {
+    alert("請完整填寫收件資訊與轉帳末五碼");
     return;
   }
 
@@ -696,38 +715,51 @@ function submitOrder() {
     return;
   }
 
+  let productTotal = 0;
+
+  products.forEach(p => {
+    const qty = cart[p.id] || 0;
+    productTotal += qty * Number(p.price);
+  });
+
+  const shippingFee = SHIPPING_FEE;
+  const grandTotal = productTotal + shippingFee;
+
   const orderId =
     "DARUMA" +
-    Math.floor(
-      100000 + Math.random() * 900000
-    );
+    Math.floor(100000 + Math.random() * 900000);
 
   db.collection("daruma_2026_summer").add({
     orderId,
     name,
     ig,
     email,
+
+    receiverName,
+    receiverPhone,
+    receiverStore,
+    receiverStoreCode,
+    paymentLast5,
+
     cart,
-    status: "未付款",
+    productTotal,
+    shippingFee,
+    grandTotal,
+
+    status: "待對帳",
     created: firebase.firestore.FieldValue.serverTimestamp()
   })
   .then(() => {
-    sendOrderEmail(
-      orderId,
-      name,
-      email,
-      cart
-    );
+    sendOrderEmail(orderId, name, email, cart);
 
-alert(
-  `訂單已送出！\n\n` +
-  `訂單編號：${orderId}\n\n` +
-  `請於下單後 48 小時內完成匯款。\n\n` +
-  `銀行：台北富邦（012）\n` +
-  `戶名：糸字旁工作室\n` +
-  `帳號：82110000537372\n\n` +
-  `完成付款後請填寫匯款資訊／帳號末五碼。`
-);
+    alert(
+      `訂單已送出！\n\n` +
+      `訂單編號：${orderId}\n\n` +
+      `商品金額：$${productTotal}\n` +
+      `7-11 運費：$${shippingFee}\n` +
+      `應付總額：$${grandTotal}\n\n` +
+      `我們會依您填寫的轉帳末五碼進行對帳。`
+    );
 
     cart = {};
 
@@ -741,13 +773,17 @@ alert(
     document.getElementById("name").value = "";
     document.getElementById("ig").value = "";
     document.getElementById("email").value = "";
+    document.getElementById("receiverName").value = "";
+    document.getElementById("receiverPhone").value = "";
+    document.getElementById("receiverStore").value = "";
+    document.getElementById("receiverStoreCode").value = "";
+    document.getElementById("paymentLast5").value = "";
   })
   .catch(err => {
     console.error(err);
     alert("送出失敗，請稍後再試");
   });
 }
-
 function searchOrder() {
   const input = document.getElementById("searchName").value.trim();
 
