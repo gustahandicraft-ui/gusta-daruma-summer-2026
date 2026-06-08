@@ -262,7 +262,9 @@ Email：${d.email || ""}<br>
       <br><br>
 
       📦 狀態：${d.status || "未付款"}<br>
-      💰 訂單金額：$${formatMoney(orderTotal)}<br>
+      💰 商品金額：$${formatMoney(d.productTotal || orderTotal)}<br>
+      🚚 運費：$${formatMoney(d.shippingFee || 60)}<br>
+      💵 應付總額：$${formatMoney(d.grandTotal || orderTotal + 60)}<br>
 
       📨 修改需求：${d.request || "無"}<br>
 
