@@ -469,7 +469,7 @@ button.submit {
 <input id="receiverStoreCode" placeholder="711門市店號">
 <input id="paymentLast5" placeholder="轉帳末五碼">
 
-<div class="grid" id="products"></div>
+<div id="products"></div>
 
 <div class="cart">
 <h3>🛒 購物車</h3>
@@ -478,9 +478,7 @@ button.submit {
 <p class="notice">
   請先依購物車總金額完成轉帳，<br>
   再填寫訂單資料與轉帳末五碼送出表單。<br>
-  送出後我們將依末五碼進行對帳，確認後訂單才算成立。<br>
-</p>送出後不代表完成訂購，<br>
-下單後 48 小時內付款，確認付款後方成立訂單。
+  送出後我們將依末五碼進行對帳，確認後訂單才算成立。
 </p>
 <button class="submit" onclick="submitOrder()">送出訂單</button>
 </div>
@@ -516,12 +514,9 @@ button.submit {
     background:#fffaf5;
     font-size:15px;
   "
-<textarea
-  id="changeNote"
-  placeholder="如需修改需求可填寫（選填）"
 ></textarea>
 
-<button type="button" class="submit" onclick="submitChangeRequest()">
+<button type="button" class="submit" onclick="submitRequest()">
   申請修改
 </button>
 
