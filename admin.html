@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<title>gusta.handicraft｜後台管理</title>
+<title>gusta.handicraft｜DARUMA 後台管理</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -14,7 +14,7 @@ emailjs.init("Bv3jNth_VV48IwhIK");
 
 <style>
 body {
-  font-family: "Helvetica";
+  font-family: "Helvetica", "Noto Sans TC", sans-serif;
   background: #f8f3ed;
   padding: 20px;
   color: #5c4b3b;
@@ -43,78 +43,94 @@ button {
   margin-right: 6px;
 }
 
+input {
+  padding: 8px;
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+  margin-bottom: 8px;
+}
+
 .stats {
   background: white;
   padding: 12px;
   border-radius: 12px;
   margin-bottom: 20px;
 }
-.stats-grid{
-  display:grid;
+
+.stats-grid {
+  display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap:18px;
+  gap: 18px;
 }
 
-.stats-group{
-  background:#fffaf5;
-  padding:12px;
-  border-radius:12px;
+.stats-group {
+  background: #fffaf5;
+  padding: 12px;
+  border-radius: 12px;
 }
 
-.stats-group h4{
-  margin-top:0;
-  margin-bottom:10px;
+.stats-group h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
 }
-.orders-grid{
-  display:grid;
+
+.orders-grid {
+  display: grid;
   grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
-  gap:16px;
+  gap: 16px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #fff8f1;
+  color: #8a6b4f;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.section-title {
+  margin-top: 26px;
 }
 </style>
 </head>
 
 <body onload="checkPassword()">
 
-<h1>🧵 gusta.handicraft｜訂單後台</h1>
+<h1>🧵 gusta.handicraft｜DARUMA 後台</h1>
 
 <div class="stats">
+  <button onclick="exportCSV()">匯出訂單 CSV</button>
+  <button onclick="exportWishlistCSV()">匯出許願池 CSV</button>
 
-<button onclick="exportCSV()">
-  匯出訂單 CSV
-</button>
+  <h3>📊 DARUMA 預購統計</h3>
 
-<h3>📊 團購統計</h3>
+  <p id="totalOrders">訂單數：0</p>
+  <p id="totalAmount">訂單總金額：$0</p>
 
-<p id="totalOrders">
-  訂單數：0
-</p>
-
-<ul id="productStats"></ul>
-
+  <ul id="productStats"></ul>
 </div>
 
 <div style="margin-bottom:15px;">
+  <input
+    id="searchOrder"
+    placeholder="搜尋姓名 / Email / IG / 訂單編號 / 商品"
+  >
 
-<input
-  id="searchOrder"
-  placeholder="搜尋姓名 / Email / 訂單編號"
-  style="padding:8px;width:100%;border-radius:8px;border:1px solid #ccc;"
->
-
-<button onclick="searchAdminOrder()">
-  搜尋訂單
-</button>
-
-<button onclick="clearAdminSearch()">
-  顯示全部
-</button>
-
+  <button onclick="searchAdminOrder()">搜尋訂單</button>
+  <button onclick="clearAdminSearch()">顯示全部</button>
 </div>
 
+<h2 class="section-title">📦 DARUMA 訂單</h2>
 <div id="orders" class="orders-grid"></div>
 
-<script>
+<h2 class="section-title">✨ DARUMA 許願池</h2>
+<div id="wishlist" class="orders-grid"></div>
 
+<script>
 const firebaseConfig = {
   apiKey: "AIzaSyDm6qL6HhI_6nv0Uahrb6RqVFh0V7nI000",
   authDomain: "gusta-handicraft-91753.firebaseapp.com",
@@ -124,7 +140,17 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-function formatTime(created){
+const ORDER_COLLECTION = "daruma_2026_summer";
+const WISHLIST_COLLECTION = "daruma_wishlist";
+const PRODUCTS_API =
+  "https://script.google.com/macros/s/AKfycbwERk9oo52ntE_DeTAA_62rBaf5uKdxoaBzSjUrKcR7kF-89UshAairec9LifnXlRVaCA/exec";
+
+let productNames = {};
+let priceMap = {};
+let productSeries = {};
+
+function formatTime(created) {
+  if (!created) return "";
 
   const time = created?.seconds
     ? new Date(created.seconds * 1000)
@@ -133,117 +159,50 @@ function formatTime(created){
   return time.toLocaleString();
 }
 
-const productNames = {
-  "001": "001 London",
-  "001-1": "001 London Suri Silk Cloud",
-  "002": "002 Minneapolis",
-  "003": "003 Praha",
-  "004": "004 Bukchon",
-  "005": "005 Toronto",
-  "005-1": "005 Toronto Mohair",
-  "006": "006 Grampians",
-  "006-1": "006 Grampians Socks",
-  "006-2": "006 Grampians Mohair",
-  "007": "007 Washington D.C",
-  "007-1": "007 Washington D.C Mohair",
-  "008": "008 Zermatt",
-  "008-1": "008 Zermatt Mohair",
-  "009": "009 New Hampshire",
-  "010": "010 Cheonggyecheon",
-  "010-1": "010 Cheonggyecheon Mohair",
-  "010-2": "010 Cheonggyecheon Fingering",
-  "011": "011 Gamcheon(Busan)",
-  "012": "012 Havana",
-  "013": "013 Santorini",
-  "014": "014 Sapa",
-  "015": "015 Jaipur",
-  "016": "016 Taranaki standard",
-  "017": "017 Taranaki Light",
-  "018代卷": "代卷服務",
-  "0190": "Smile Yarn Holder 白色",
-  "0191": "Smile Yarn Holder 黃色",
-  "0192": "Smile Yarn Holder 藍色",
-  "0193": "Smile Yarn Holder 綠色",
-  "0194": "Smile Yarn Holder 粉色",
-  "0200": "Yarn Cone Keyring 白色",
-  "0201": "Yarn Cone Keyring 黃色",
-  "0202": "Yarn Cone Keyring 藍色",
-  "0203": "Yarn Cone Keyring 綠色",
-  "0204": "Yarn Cone Keyring 粉色",
-  "0205": "Yarn Cone Keyring 紫色",
-  "0210": "Yarn Cone Clicker 白色",
-  "0211": "Yarn Cone Clicker 黃色",
-  "0212": "Yarn Cone Clicker 藍色",
-  "0213": "Yarn Cone Clicker 綠色",
-  "0214": "Yarn Cone Clicker 粉色",
-  "0215": "Yarn Cone Clicker 紫色"
-};
+function formatMoney(num) {
+  return Number(num || 0).toLocaleString("zh-TW");
+}
 
-const priceMap = {
+function loadProducts() {
+  return fetch(PRODUCTS_API)
+    .then(res => res.json())
+    .then(data => {
+      data.forEach(p => {
+        if (!p.id) return;
 
-  "001": 880,
-  "001-1": 980,
+        productNames[p.id] = p.name || p.id;
+        priceMap[p.id] = Number(p.price || 0);
+        productSeries[p.id] = p.series || "DARUMA";
+      });
 
-  "002": 880,
-  "003": 880,
-  "004": 880,
+      console.log("DARUMA products loaded:", data.length);
+    })
+    .catch(err => {
+      console.error("商品資料讀取失敗", err);
+      alert("商品資料讀取失敗，後台仍可顯示訂單，但金額與商品名稱可能不完整。");
+    });
+}
 
-  "005": 880,
-  "005-1": 980,
+function getOrderItems(cart) {
+  return Object.entries(cart || {}).map(([id, qty]) => {
+    return {
+      id,
+      qty,
+      name: productNames[id] || id,
+      price: priceMap[id] || 0,
+      subtotal: (priceMap[id] || 0) * qty,
+      series: productSeries[id] || "DARUMA"
+    };
+  });
+}
 
-  "006": 880,
-  "006-1": 880,
-  "006-2": 980,
+function getOrderTotal(cart) {
+  return getOrderItems(cart).reduce((sum, item) => {
+    return sum + item.subtotal;
+  }, 0);
+}
 
-  "007": 880,
-  "007-1": 980,
-
-  "008": 880,
-  "008-1": 980,
-
-  "009": 880,
-
-  "010": 880,
-  "010-1": 980,
-  "010-2": 880,
-
-  "011": 880,
-  "012": 880,
-  "013": 880,
-  "014": 880,
-  "015": 880,
-  "016": 880,
-  "017": 880,
-
-  "018代卷": 40,
-
-  "0190": 800,
-  "0191": 800,
-  "0192": 800,
-  "0193": 800,
-  "0194": 800,
-
-  "0200": 270,
-  "0201": 270,
-  "0202": 270,
-  "0203": 270,
-  "0204": 270,
-  "0205": 270,
-
-  "0210": 270,
-  "0211": 270,
-  "0212": 270,
-  "0213": 270,
-  "0214": 270,
-  "0215": 270
-};
-
-// 即時監聽訂單
-
-db.collection("orders")
-.orderBy("created","desc")
-.onSnapshot(snapshot => {
-
+function renderOrders(snapshot) {
   const container = document.getElementById("orders");
   const statsEl = document.getElementById("productStats");
 
@@ -251,46 +210,53 @@ db.collection("orders")
   statsEl.innerHTML = "";
 
   let totalOrders = 0;
+  let totalAmount = 0;
   let productStats = {};
 
   snapshot.forEach(doc => {
-
     totalOrders++;
 
     const d = doc.data();
+    const items = getOrderItems(d.cart);
+    const orderTotal = getOrderTotal(d.cart);
 
-    for (let key in (d.cart || {})) {
-      productStats[key] =
-        (productStats[key] || 0) + d.cart[key];
-    }
+    totalAmount += orderTotal;
 
-    const div = document.createElement("div");
-    div.className = "card";
+    items.forEach(item => {
+      if (!productStats[item.id]) {
+        productStats[item.id] = {
+          name: item.name,
+          qty: 0,
+          amount: 0,
+          series: item.series
+        };
+      }
 
-    let orderTotal = 0;
-
-    Object.entries(d.cart || {}).forEach(([id, qty]) => {
-      orderTotal += (priceMap[id] || 0) * qty;
+      productStats[item.id].qty += Number(item.qty || 0);
+      productStats[item.id].amount += item.subtotal;
     });
 
+    const div = document.createElement("div");
+    div.className = "card admin-order-card";
+
     div.innerHTML = `
+      <span class="badge">DARUMA</span><br>
 
-      <b>${d.orderId}</b><br>
+      <b>${d.orderId || ""}</b><br>
 
-      ${d.name}（${d.email}）<br>
+      👤 ${d.name || ""}<br>
+      IG：${d.ig || ""}<br>
+      Email：${d.email || ""}<br><br>
 
       🧶 ${
-        Object.entries(d.cart || {})
-        .map(([id, qty]) => {
-          return `${productNames[id] || id} x ${qty}`;
-        })
-        .join(", ")
+        items
+          .map(item => `${item.name} x ${item.qty}（$${formatMoney(item.subtotal)}）`)
+          .join("<br>")
       }
-      <br>
+      <br><br>
 
-      📦 狀態：${d.status}<br>
-
-      💰 訂單金額：$${orderTotal}<br>
+      📦 狀態：${d.status || "未付款"}<br>
+      💰 訂單金額：$${formatMoney(orderTotal)}<br>
 
       📨 修改需求：${d.request || "無"}<br>
 
@@ -305,95 +271,109 @@ db.collection("orders")
 
       🕒 ${formatTime(d.created)}<br>
 
-      <button onclick="replyRequest('${doc.id}')">
-        已回覆修改
-      </button>
-
-      <button onclick="updateStatus('${doc.id}', '已出貨')">
-        標記已出貨
-      </button>
-
-      <button onclick="updateStatus('${doc.id}', '已完成')">
-        標記完成
-      </button>
-
+      <button onclick="replyRequest('${doc.id}')">已回覆修改</button>
+      <button onclick="updateStatus('${doc.id}', '已付款')">標記已付款</button>
+      <button onclick="updateStatus('${doc.id}', '已訂貨')">標記已訂貨</button>
+      <button onclick="updateStatus('${doc.id}', '已出貨')">標記已出貨</button>
+      <button onclick="updateStatus('${doc.id}', '已完成')">標記完成</button>
     `;
 
     container.appendChild(div);
-
   });
 
   document.getElementById("totalOrders").textContent =
     "訂單數：" + totalOrders;
 
-  const groups = {
-    "Travel Yarn": [],
-    "Smile Holder": [],
-    "Cone Keyring": [],
-    "Cone Clicker": [],
-    "其他": []
-  };
+  document.getElementById("totalAmount").textContent =
+    "訂單總金額：$" + formatMoney(totalAmount);
+
+  renderProductStats(productStats);
+}
+
+function renderProductStats(productStats) {
+  const statsEl = document.getElementById("productStats");
+  statsEl.innerHTML = "";
+
+  const groups = {};
 
   Object.keys(productStats).forEach(id => {
+    const item = productStats[id];
+    const groupName = item.series || "DARUMA";
 
-    const text =
-      `${productNames[id] || id}：${productStats[id]} 顆`;
+    if (!groups[groupName]) groups[groupName] = [];
 
-    if(id.startsWith("019")){
-      groups["Smile Holder"].push(text);
-
-    }else if(id.startsWith("020")){
-      groups["Cone Keyring"].push(text);
-
-    }else if(id.startsWith("021")){
-      groups["Cone Clicker"].push(text);
-
-    }else if(id === "018代卷"){
-      groups["其他"].push(text);
-
-    }else{
-      groups["Travel Yarn"].push(text);
-    }
-
+    groups[groupName].push(
+      `${item.name}：${item.qty} 包／$${formatMoney(item.amount)}`
+    );
   });
-const statsGrid = document.createElement("div");
-statsGrid.className = "stats-grid";
 
-statsEl.appendChild(statsGrid);
+  const statsGrid = document.createElement("div");
+  statsGrid.className = "stats-grid";
+  statsEl.appendChild(statsGrid);
+
   Object.entries(groups).forEach(([title, items]) => {
-
-    if(items.length === 0) return;
+    if (items.length === 0) return;
 
     const groupBox = document.createElement("div");
-groupBox.className = "stats-group";
+    groupBox.className = "stats-group";
 
-const titleEl = document.createElement("h4");
-titleEl.textContent = title;
+    const titleEl = document.createElement("h4");
+    titleEl.textContent = title;
 
-groupBox.appendChild(titleEl);
+    const ul = document.createElement("ul");
 
-const ul = document.createElement("ul");
+    items.forEach(text => {
+      const li = document.createElement("li");
+      li.textContent = text;
+      li.style.marginBottom = "6px";
+      ul.appendChild(li);
+    });
 
-items.forEach(text => {
-
-  const li = document.createElement("li");
-  li.textContent = text;
-  li.style.marginBottom = "6px";
-
-  ul.appendChild(li);
-
-});
-
-groupBox.appendChild(ul);
-
-statsGrid.appendChild(groupBox);
-
+    groupBox.appendChild(titleEl);
+    groupBox.appendChild(ul);
+    statsGrid.appendChild(groupBox);
   });
+}
 
-});
+function listenOrders() {
+  db.collection(ORDER_COLLECTION)
+    .orderBy("created", "desc")
+    .onSnapshot(renderOrders);
+}
 
-function sendStatusEmail(orderId, name, email, status){
+function listenWishlist() {
+  db.collection(WISHLIST_COLLECTION)
+    .orderBy("created", "desc")
+    .onSnapshot(snapshot => {
+      const container = document.getElementById("wishlist");
+      container.innerHTML = "";
 
+      if (snapshot.empty) {
+        container.innerHTML = "<p>目前尚無許願資料。</p>";
+        return;
+      }
+
+      snapshot.forEach(doc => {
+        const d = doc.data();
+
+        const div = document.createElement("div");
+        div.className = "card";
+
+        div.innerHTML = `
+          <span class="badge">Wishlist</span><br>
+          👤 ${d.name || ""}<br>
+          📩 ${d.contact || ""}<br>
+          ✨ ${d.wish || ""}<br>
+          🕒 ${formatTime(d.created)}
+        `;
+
+        container.appendChild(div);
+      });
+    });
+}
+
+function sendStatusEmail(orderId, name, email, status) {
+  // 如果 DARUMA 狀態信尚未建立，可先保留但不啟用。
   emailjs.send(
     "service_hc29cbj",
     "template_status",
@@ -403,158 +383,184 @@ function sendStatusEmail(orderId, name, email, status){
       to_email: email,
       status: status
     }
-  );
-
+  ).catch(err => {
+    console.error("狀態信寄送失敗", err);
+  });
 }
 
-function updateStatus(id, status){
+function updateStatus(id, status) {
+  const ref = db.collection(ORDER_COLLECTION).doc(id);
 
-  db.collection("orders")
-    .doc(id)
-    .update({
-      status: status
-    });
-
-  db.collection("orders")
-    .doc(id)
-    .get()
+  ref.update({ status })
+    .then(() => ref.get())
     .then(doc => {
-
       const d = doc.data();
 
-      sendStatusEmail(
-        d.orderId,
-        d.name,
-        d.email,
-        status
-      );
-
+      if (d?.email) {
+        sendStatusEmail(
+          d.orderId,
+          d.name,
+          d.email,
+          status
+        );
+      }
     });
-
 }
 
-function exportCSV(){
+function exportCSV() {
+  db.collection(ORDER_COLLECTION)
+    .get()
+    .then(snapshot => {
+      let csv = [];
 
-  db.collection("orders")
-  .get()
-  .then(snapshot => {
+      csv.push([
+        "訂單編號",
+        "姓名",
+        "IG",
+        "Email",
+        "商品ID",
+        "商品名稱",
+        "數量",
+        "單價",
+        "小計",
+        "狀態",
+        "修改需求",
+        "修改狀態",
+        "時間"
+      ]);
 
-    let csv = [];
+      snapshot.forEach(doc => {
+        const d = doc.data();
 
-    csv.push([
-      "姓名",
-      "IG",
-      "商品",
-      "數量",
-      "狀態",
-      "時間"
-    ]);
-
-    snapshot.forEach(doc => {
-
-      const d = doc.data();
-
-      Object.entries(d.cart || {}).forEach(item => {
-
-        csv.push([
-          d.name,
-          d.ig,
-          item[0],
-          item[1],
-          d.status,
-          formatTime(d.created)
-        ]);
-
+        getOrderItems(d.cart).forEach(item => {
+          csv.push([
+            d.orderId || "",
+            d.name || "",
+            d.ig || "",
+            d.email || "",
+            item.id,
+            item.name,
+            item.qty,
+            item.price,
+            item.subtotal,
+            d.status || "",
+            d.request || "",
+            d.requestStatus || "",
+            formatTime(d.created)
+          ]);
+        });
       });
 
+      downloadCSV(csv, "daruma_orders.csv");
     });
-
-    const csvContent =
-      "\uFEFF" +
-      csv.map(e => e.join(",")).join("\n");
-
-    const blob = new Blob(
-      [csvContent],
-      { type: "text/csv;charset=utf-8;" }
-    );
-
-    const link = document.createElement("a");
-
-    link.href = URL.createObjectURL(blob);
-
-    link.download = "gusta_orders.csv";
-
-    link.click();
-
-  });
-
 }
 
-function checkPassword(){
+function exportWishlistCSV() {
+  db.collection(WISHLIST_COLLECTION)
+    .get()
+    .then(snapshot => {
+      let csv = [];
 
+      csv.push([
+        "姓名",
+        "聯絡方式",
+        "許願內容",
+        "時間"
+      ]);
+
+      snapshot.forEach(doc => {
+        const d = doc.data();
+
+        csv.push([
+          d.name || "",
+          d.contact || "",
+          d.wish || "",
+          formatTime(d.created)
+        ]);
+      });
+
+      downloadCSV(csv, "daruma_wishlist.csv");
+    });
+}
+
+function downloadCSV(csv, filename) {
+  const csvContent =
+    "\uFEFF" +
+    csv.map(row =>
+      row.map(value => {
+        const text = String(value ?? "").replace(/"/g, '""');
+        return `"${text}"`;
+      }).join(",")
+    ).join("\n");
+
+  const blob = new Blob(
+    [csvContent],
+    { type: "text/csv;charset=utf-8;" }
+  );
+
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  link.click();
+}
+
+function checkPassword() {
   const password = prompt("請輸入後台密碼");
-
   const adminPassword = "gusta6633";
 
-  if(password !== adminPassword){
+  if (password !== adminPassword) {
     alert("密碼錯誤");
     document.body.innerHTML = "";
   }
-
 }
 
-function searchAdminOrder(){
-
+function searchAdminOrder() {
   const keyword =
     document.getElementById("searchOrder")
-    .value
-    .trim();
+      .value
+      .trim();
 
-  if(!keyword){
+  if (!keyword) {
     alert("請輸入搜尋內容");
     return;
   }
 
-  const cards = document.querySelectorAll(".card");
+  const cards = document.querySelectorAll(".admin-order-card");
 
   cards.forEach(card => {
-
     const text = card.textContent;
 
     card.style.display =
       text.includes(keyword)
         ? "block"
         : "none";
-
   });
-
 }
 
-function clearAdminSearch(){
-
+function clearAdminSearch() {
   document.getElementById("searchOrder").value = "";
 
-  const cards = document.querySelectorAll(".card");
+  const cards = document.querySelectorAll(".admin-order-card");
 
   cards.forEach(card => {
     card.style.display = "block";
   });
-
 }
 
-function replyRequest(id){
-
-  db.collection("orders")
+function replyRequest(id) {
+  db.collection(ORDER_COLLECTION)
     .doc(id)
     .update({
       requestStatus: "已回覆",
       request: ""
     });
-
 }
 
+loadProducts().then(() => {
+  listenOrders();
+  listenWishlist();
+});
 </script>
 
 </body>
 </html>
-```
