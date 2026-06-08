@@ -385,6 +385,20 @@ button.submit {
 </p>
 <button class="submit" onclick="submitOrder()">送出訂單</button>
 </div>
+  <section class="notice">
+  <h2>✨ DARUMA 許願池</h2>
+
+  <p>
+    這次是 DARUMA 漲價前的夏季補貨企劃。<br>
+    如果有其他一直想試試看，或希望未來開放追加預購的 DARUMA 線材，也歡迎留下許願清單。
+  </p>
+
+  <input id="wishName" placeholder="您的暱稱">
+  <input id="wishContact" placeholder="IG / LINE / Email（方便聯繫）">
+  <input id="wishItem" placeholder="想許願的系列／色號，例如：SASAWASHI 03">
+
+  <button class="submit" onclick="submitWish()">送出許願</button>
+</section>
 
 <h3>📦 查詢訂單</h3>
 <input id="searchName" placeholder="輸入LINE暱稱 / Email / 訂單編號">
@@ -405,7 +419,34 @@ button.submit {
     font-size:15px;
   "
 ></textarea>
+function submitWish() {
+  const name = document.getElementById("wishName").value.trim();
+  const contact = document.getElementById("wishContact").value.trim();
+  const wish = document.getElementById("wishItem").value.trim();
 
+  if (!name || !contact || !wish) {
+    alert("請填寫暱稱、聯絡方式與許願內容");
+    return;
+  }
+
+  db.collection("daruma_wishlist").add({
+    name,
+    contact,
+    wish,
+    created: firebase.firestore.FieldValue.serverTimestamp()
+  })
+  .then(() => {
+    alert("已收到你的 DARUMA 許願清單，謝謝你 🧶");
+
+    document.getElementById("wishName").value = "";
+    document.getElementById("wishContact").value = "";
+    document.getElementById("wishItem").value = "";
+  })
+  .catch(err => {
+    console.error(err);
+    alert("送出失敗，請稍後再試");
+  });
+}
 <button
   class="submit"
   onclick="submitRequest()"
