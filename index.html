@@ -426,11 +426,11 @@ function renderProducts() {
     div.className = "card";
 
     div.innerHTML = `
-      <img
-        src="${p.img}"
-        class="product-img"
-        onclick="openProductModal('${p.id}')"
-      >
+     <img
+  src="${p.img1}"
+  class="product-img"
+  onclick="openProductModal('${p.id}')"
+>
 <div class="sale-tag">
   ${
     p.saleType === "pack"
@@ -794,8 +794,13 @@ function openProductModal(id) {
   const product = products.find(p => p.id === id);
   if (!product) return;
 
-  modalImages = [product.img, product.img2, product.img3]
-    .filter(Boolean);
+modalImages = [
+  product.img1,
+  product.img2,
+  product.img3,
+  product.img4,
+  product.img5
+].filter(Boolean);
 
   currentImageIndex = 0;
 
