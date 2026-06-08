@@ -300,15 +300,33 @@ button.submit {
   line-height: 1.75;
   white-space: pre-line;
 }
-  .series-title{
-  margin-top:32px;
-  margin-bottom:12px;
-  padding-bottom:8px;
-  border-bottom:2px solid #e6d8c8;
+  .series-filter {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 6px 0 14px;
+  margin-bottom: 10px;
+  position: sticky;
+  top: 0;
+  background: #f8f3ed;
+  z-index: 20;
+}
 
-  font-size:20px;
-  font-weight:600;
-  color:#5c4b3b;
+.series-filter-btn {
+  flex: 0 0 auto;
+  border: 1px solid #e5d5c3;
+  border-radius: 999px;
+  background: #fffaf5;
+  color: #5c4b3b;
+  padding: 8px 14px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.series-filter-btn.active {
+  background: #cbb59b;
+  color: white;
+  border-color: #cbb59b;
 }
 
 @media (max-width: 768px) {
@@ -538,64 +556,76 @@ renderProducts();
     console.error(err);
   });
 
+let currentSeries = "全部";
+
 function renderProducts() {
   const el = document.getElementById("products");
   el.innerHTML = "";
 
-  const groups = {};
+  const seriesList = [
+    "全部",
+    ...new Set(products.map(p => p.series || "其他"))
+  ];
 
-  products.forEach(p => {
-    const series = p.series || "其他";
+  const filterBox = document.createElement("div");
+  filterBox.className = "series-filter";
 
-    if (!groups[series]) {
-      groups[series] = [];
-    }
+  seriesList.forEach(series => {
+    const btn = document.createElement("button");
+    btn.textContent = series;
+    btn.className =
+      series === currentSeries
+        ? "series-filter-btn active"
+        : "series-filter-btn";
 
-    groups[series].push(p);
+    btn.onclick = () => {
+      currentSeries = series;
+      renderProducts();
+    };
+
+    filterBox.appendChild(btn);
   });
 
-  Object.keys(groups).forEach(series => {
+  el.appendChild(filterBox);
 
-    const title = document.createElement("h2");
-    title.className = "series-title";
-    title.textContent = series;
-    el.appendChild(title);
+  const grid = document.createElement("div");
+  grid.className = "grid";
 
-    const grid = document.createElement("div");
-    grid.className = "grid";
+  const filteredProducts =
+    currentSeries === "全部"
+      ? products
+      : products.filter(p => (p.series || "其他") === currentSeries);
 
-    groups[series].forEach(p => {
+  filteredProducts.forEach(p => {
+    const div = document.createElement("div");
+    div.className = "card";
 
-      const div = document.createElement("div");
-      div.className = "card";
+    div.innerHTML = `
+      <img
+        src="${p.img1}"
+        class="product-img"
+        onclick="openProductModal('${p.id}')"
+      >
 
-      div.innerHTML = `
-        <img
-          src="${p.img1}"
-          class="product-img"
-          onclick="openProductModal('${p.id}')"
-        >
+      <div class="product-name" onclick="openProductModal('${p.id}')">
+        ${p.name}
+      </div>
 
-        <div class="product-name">
-          ${p.name}
-        </div>
+      <div class="product-price">
+        NT$${Number(p.price).toLocaleString()}
+      </div>
 
-        <div class="product-price">
-          NT$${Number(p.price).toLocaleString()}
-        </div>
+      <div class="qty">
+        <button class="qty-btn" onclick="changeQty('${p.id}', -1)">−</button>
+        <span id="qty-${p.id}" class="qty-number">0</span>
+        <button class="qty-btn" onclick="changeQty('${p.id}', 1)">＋</button>
+      </div>
+    `;
 
-        <div class="qty">
-          <button class="qty-btn" onclick="changeQty('${p.id}', -1)">−</button>
-          <span id="qty-${p.id}" class="qty-number">0</span>
-          <button class="qty-btn" onclick="changeQty('${p.id}', 1)">＋</button>
-        </div>
-      `;
-
-      grid.appendChild(div);
-    });
-
-    el.appendChild(grid);
+    grid.appendChild(div);
   });
+
+  el.appendChild(grid);
 }
 
 function changeQty(id, delta) {
