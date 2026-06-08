@@ -292,16 +292,18 @@ button.submit {
 
 <body>
 
-<div id="imageModal" style="
-  display:none;
-  position:fixed;
-  z-index:9999;
-  inset:0;
-  background:rgba(0,0,0,0.8);
-  justify-content:center;
-  align-items:center;
-  padding:20px;
+<div id="imageModal"
+     style="
+       display:none;
+       position:fixed;
+       z-index:9999;
+       inset:0;
+       background:rgba(0,0,0,.8);
+       justify-content:center;
+       align-items:center;
+       padding:20px;
 ">
+</div>
   <img
     id="modalImg"
     style="
@@ -420,28 +422,6 @@ button.submit {
   "
 ></textarea>
 
-  db.collection("daruma_wishlist").add({
-    name,
-    contact,
-    wish,
-    created: firebase.firestore.FieldValue.serverTimestamp()
-  })
-  .then(() => {
-    alert("已收到你的 DARUMA 許願清單，謝謝你 🧶");
-
-    document.getElementById("wishName").value = "";
-    document.getElementById("wishContact").value = "";
-    document.getElementById("wishItem").value = "";
-  })
-  .catch(err => {
-    console.error(err);
-    alert("送出失敗，請稍後再試");
-  });
-}
-<button
-  class="submit"
-  onclick="submitRequest()"
->
   申請修改
 </button>
 
@@ -644,7 +624,7 @@ function submitOrder() {
   }
 
   const orderId =
-    "DY" +
+    "DARUMA" +
     Math.floor(
       100000 + Math.random() * 900000
     );
