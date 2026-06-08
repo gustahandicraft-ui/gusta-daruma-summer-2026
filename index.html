@@ -191,6 +191,136 @@ button.submit {
   color: #9a6b3f;
   margin: 6px 0 8px;
 }
+  .product-modal-card {
+  background: #fffaf5;
+  max-width: 520px;
+  width: 100%;
+  max-height: 90vh;
+  overflow: auto;
+  border-radius: 22px;
+  padding: 18px;
+  color: #5c4b3b;
+  position: relative;
+}
+
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  border: none;
+  background: #e7d7c7;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  font-size: 20px;
+  color: #5c4b3b;
+  cursor: pointer;
+}
+
+.modal-product-img {
+  width: 100%;
+  border-radius: 18px;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.modal-image-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.modal-image-buttons button {
+  border: none;
+  background: #e7d7c7;
+  color: #5c4b3b;
+  border-radius: 999px;
+  padding: 6px 18px;
+  font-size: 16px;
+}
+
+.modal-tag {
+  display: inline-block;
+  font-size: 12px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: #f1e7dc;
+  margin-bottom: 10px;
+}
+
+.modal-title {
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.modal-price {
+  font-size: 22px;
+  font-weight: 600;
+  color: #9a6b3f;
+  margin-bottom: 14px;
+}
+
+.modal-description {
+  font-size: 14px;
+  line-height: 1.8;
+  background: #fff;
+  border: 1px solid #ead9c8;
+  border-radius: 14px;
+  padding: 12px;
+  margin-bottom: 12px;
+  white-space: pre-line;
+}
+
+.modal-info {
+  display: grid;
+  gap: 10px;
+}
+
+.modal-info div {
+  background: #fff;
+  border: 1px solid #ead9c8;
+  border-radius: 14px;
+  padding: 12px;
+}
+
+.modal-info span {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #9a6b3f;
+  margin-bottom: 4px;
+}
+
+.modal-info p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.75;
+  white-space: pre-line;
+}
+
+@media (max-width: 768px) {
+  .product-modal-card {
+    max-height: 88vh;
+    padding: 14px;
+    border-radius: 20px;
+  }
+
+  .modal-title {
+    font-size: 17px;
+  }
+
+  .modal-price {
+    font-size: 20px;
+  }
+
+  .modal-description,
+  .modal-info p {
+    font-size: 13px;
+  }
+}
 
 /* 手機版 */
 @media (max-width: 768px) {
@@ -809,66 +939,75 @@ function openProductModal(id) {
   const product = products.find(p => p.id === id);
   if (!product) return;
 
-modalImages = [
-  product.img1,
-  product.img2,
-  product.img3,
-  product.img4,
-  product.img5
-].filter(Boolean);
+  modalImages = [
+    product.img1,
+    product.img2,
+    product.img3,
+    product.img4,
+    product.img5
+  ].filter(Boolean);
 
   currentImageIndex = 0;
 
   const modal = document.getElementById("imageModal");
-  
+
   modal.innerHTML = `
-    <div style="
-      background:#fffaf5;
-      max-width:520px;
-      width:100%;
-      max-height:90vh;
-      overflow:auto;
-      border-radius:20px;
-      padding:18px;
-      color:#5c4b3b;
-      position:relative;
-    ">
-      <button onclick="closeProductModal()" style="
-        position:absolute;
-        top:10px;
-        right:10px;
-        border:none;
-        background:#e7d7c7;
-        border-radius:50%;
-        width:34px;
-        height:34px;
-        font-size:18px;
-      ">×</button>
+    <div class="product-modal-card">
+      <button onclick="closeProductModal()" class="modal-close">×</button>
 
-      <img id="modalProductImg" src="${modalImages[0]}" style="
-        width:100%;
-        border-radius:16px;
-        margin-bottom:12px;
-      ">
+      <img id="modalProductImg" src="${modalImages[0]}" class="modal-product-img">
 
-      <div style="display:flex; gap:8px; justify-content:center; margin-bottom:14px;">
-        <button onclick="changeModalImage(-1)">←</button>
-        <button onclick="changeModalImage(1)">→</button>
+      ${
+        modalImages.length > 1
+          ? `
+          <div class="modal-image-buttons">
+            <button onclick="changeModalImage(-1)">←</button>
+            <button onclick="changeModalImage(1)">→</button>
+          </div>
+          `
+          : ""
+      }
+
+      <div class="modal-tag">
+        ${
+          product.saleType === "pack"
+            ? "📦 原廠整包訂購"
+            : "🧶 一起湊包中"
+        }
       </div>
 
-      <h2 style="font-size:18px;">${product.name}</h2>
+      <div class="modal-title">
+        ${product.name}
+      </div>
 
-      <p>${product.description || ""}</p>
+      <div class="modal-price">
+        NT$${Number(product.price).toLocaleString()}
+      </div>
 
-      <p><b>材質：</b>${product.material || ""}</p>
-      <p><b>規格：</b>${product.spec || ""}</p>
-      <p><b>價格：</b>$${product.price}</p>
+      ${
+        product.description
+          ? `<div class="modal-description">${product.description}</div>`
+          : ""
+      }
+
+      <div class="modal-info">
+        ${
+          product.material
+            ? `<div><span>材質</span><p>${product.material}</p></div>`
+            : ""
+        }
+
+        ${
+          product.spec
+            ? `<div><span>規格</span><p>${product.spec}</p></div>`
+            : ""
+        }
+      </div>
     </div>
   `;
 
   modal.style.display = "flex";
 }
-
 function changeModalImage(delta) {
   if (modalImages.length === 0) return;
 
