@@ -612,7 +612,7 @@ function renderProducts() {
 
       <div class="qty">
         <button class="qty-btn" onclick="changeQty('${p.id}', -1)">−</button>
-        <span id="qty-${p.id}" class="qty-number">0</span>
+        <span id="qty-${p.id}" class="qty-number">${cart[p.id] || 0}</span>
         <button class="qty-btn" onclick="changeQty('${p.id}', 1)">＋</button>
       </div>
     `;
@@ -622,26 +622,26 @@ function renderProducts() {
 
   el.appendChild(grid);
 }
-
 function changeQty(id, delta) {
+  const current = cart[id] || 0;
+  const next = Math.max(0, current + delta);
+
+  if (next === 0) {
+    delete cart[id];
+  } else {
+    cart[id] = next;
+  }
+
   const el = document.getElementById("qty-" + id);
-  let value = parseInt(el.textContent);
-  value = Math.max(0, value + delta);
-  el.textContent = value;
+  if (el) {
+    el.textContent = next;
+  }
+
   updateCart();
 }
 
 function updateCart() {
-  cart = {};
   let total = 0;
-
-  products.forEach(p => {
-    const qty = parseInt(document.getElementById("qty-" + p.id).textContent);
-    if (qty > 0) {
-      cart[p.id] = qty;
-      total += qty * Number(p.price);
-    }
-  });
 
   const el = document.getElementById("cart");
   el.innerHTML = "";
@@ -650,14 +650,18 @@ function updateCart() {
     const p = products.find(x => x.id === id);
     if (!p) return;
 
+    const qty = cart[id];
+    total += qty * Number(p.price);
+
     const li = document.createElement("li");
-    li.textContent = `${p.name} x ${cart[id]}`;
+    li.textContent = `${p.name} x ${qty}`;
     el.appendChild(li);
   });
 
- const grandTotal = total > 0 ? total + SHIPPING_FEE : 0;
-document.getElementById("total").textContent =
-  "總金額 $" + grandTotal + "（含 7-11 運費 $60）";
+  const grandTotal = total > 0 ? total + SHIPPING_FEE : 0;
+
+  document.getElementById("total").textContent =
+    "總金額 $" + grandTotal + "（含 7-11 運費 $60）";
 }
 
 function listenTotal() {
